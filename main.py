@@ -2,11 +2,9 @@ from fastapi import FastAPI, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from langchain_groq import ChatGroq
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from dotenv import load_dotenv
 from database import SessionLocal, ConversationLog
-from tools import assess_loan_risk, get_banking_info
 import os
 import uuid
 
@@ -14,23 +12,33 @@ load_dotenv()
 
 app = FastAPI(title="BFSI Assistant API")
 
-# LLM with tools bound directly
+# LLM — no tools bound, we handle everything in the prompt
 llm = ChatGroq(
-    model="llama-3.1-8b-instant",
+    model="llama-3.3-70b-versatile",
     groq_api_key=os.getenv("GROQ_API_KEY")
 )
 
-llm_with_tools = llm.bind_tools([assess_loan_risk, get_banking_info])
-
-# System prompt
-SYSTEM_PROMPT = """You are a helpful BFSI (Banking, Financial Services and Insurance) assistant.
+SYSTEM_PROMPT = """You are a helpful BFSI (Banking, Financial Services and Insurance) assistant at an Indian bank.
 You help customers with banking queries, loan assessments, and financial advice.
-You have access to tools to assess loan risk and provide banking information.
-Always be professional, accurate, and helpful.
-If asked about loan eligibility, use the assess_loan_risk tool.
-If asked about banking concepts, use the get_banking_info tool."""
 
-# Session memory store — stores conversation history per session
+You have deep knowledge about:
+- Credit scores (300-900 range in India, 750+ is excellent)
+- Loan types: Home Loans (8-9%), Personal Loans (10-24%), Car Loans (7-9%), Education Loans (8-15%), Business Loans (10-18%)
+- KYC requirements: Aadhaar, PAN, address proof, income proof
+- Fixed Deposits: 5-7.5% interest, senior citizens get extra 0.25-0.5%
+- International remittances via SWIFT, NEFT, RTGS
+- Teller operations, cash management, paper remittance processing
+- Loan eligibility factors: credit score, income, employment stability, debt-to-income ratio
+
+For loan risk assessment, consider:
+- Age 18-60 preferred
+- Stable employment (2+ years preferred)  
+- Income to loan ratio (loan should be less than 5x annual income)
+- Good credit score (700+)
+
+Always be professional, accurate, and helpful. Give specific numbers and advice when possible."""
+
+# Session memory store
 session_histories = {}
 
 def get_db():
@@ -57,42 +65,26 @@ def chat(request: ChatRequest, db: Session = Depends(get_db)):
     # Create or get session
     session_id = request.session_id or str(uuid.uuid4())
 
-    # Get or create history for this session
+    # Get or create history
     if session_id not in session_histories:
         session_histories[session_id] = []
 
     history = session_histories[session_id]
 
-    # Build messages list
-    messages = [("system", SYSTEM_PROMPT)]
+    # Build messages
+    messages = [SystemMessage(content=SYSTEM_PROMPT)]
+
+    # Add conversation history
     for h in history:
-        messages.append(("human", h["user"]))
-        messages.append(("assistant", h["assistant"]))
-    messages.append(("human", request.message))
+        messages.append(HumanMessage(content=h["user"]))
+        messages.append(AIMessage(content=h["assistant"]))
+
+    # Add current message
+    messages.append(HumanMessage(content=request.message))
 
     # Call LLM
-    response = llm_with_tools.invoke(messages)
+    response = llm.invoke(messages)
     ai_response = response.content
-
-    # If LLM wants to use a tool
-    if response.tool_calls:
-        tool_results = []
-        for tool_call in response.tool_calls:
-            tool_name = tool_call["name"]
-            tool_args = tool_call["args"]
-            if tool_name == "assess_loan_risk":
-                result = assess_loan_risk.invoke(tool_args)
-            elif tool_name == "get_banking_info":
-                result = get_banking_info.invoke(tool_args)
-            else:
-                result = "Tool not found"
-            tool_results.append(result)
-
-        # Send tool results back to LLM for final response
-        messages.append(("assistant", str(response.tool_calls)))
-        messages.append(("human", f"Tool results: {', '.join(tool_results)}. Now give the user a helpful response based on these results."))
-        final_response = llm_with_tools.invoke(messages)
-        ai_response = final_response.content
 
     # Update memory
     session_histories[session_id].append({
@@ -139,3 +131,7 @@ def get_all_conversations(db: Session = Depends(get_db)):
         }
         for log in logs
     ]
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
