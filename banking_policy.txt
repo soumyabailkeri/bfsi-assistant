@@ -1,0 +1,40 @@
+BANK LOAN POLICY DOCUMENT
+
+HOME LOAN ELIGIBILITY:
+- Minimum age: 21 years, Maximum age: 65 years at loan maturity
+- Minimum income: Rs 25,000 per month for salaried employees
+- Minimum income: Rs 2,00,000 per year for self-employed
+- Maximum loan amount: 80% of property value
+- Minimum employment: 2 years in current job
+- Credit score requirement: minimum 700
+- Required documents: Aadhaar card, PAN card, salary slips (3 months), bank statements (6 months), property documents
+
+PERSONAL LOAN ELIGIBILITY:
+- Minimum age: 21 years, Maximum age: 60 years
+- Minimum monthly income: Rs 20,000
+- Minimum employment: 1 year in current organisation
+- Maximum loan amount: Rs 40,00,000
+- Credit score requirement: minimum 650
+- Required documents: Aadhaar card, PAN card, salary slips (3 months), bank statements (3 months)
+
+FIXED DEPOSIT POLICY:
+- Minimum deposit amount: Rs 10,000
+- Minimum tenure: 7 days, Maximum tenure: 10 years
+- Interest rates: 5.5% to 7.5% depending on tenure
+- Senior citizen additional rate: 0.50% extra
+- Premature withdrawal penalty: 1% on applicable rate
+- TDS applicable if interest exceeds Rs 40,000 per year
+
+CASH WITHDRAWAL POLICY:
+- Maximum cash withdrawal per day at branch: Rs 1,00,000
+- Maximum ATM withdrawal per day: Rs 50,000
+- Large cash transactions above Rs 50,000 require PAN card
+- Cash transactions above Rs 10,00,000 reported to Income Tax department
+- Teller must verify denomination count and obtain customer signature
+
+REMITTANCE POLICY:
+- Domestic NEFT: Available 24x7, minimum Rs 1, no maximum limit
+- Domestic RTGS: Minimum Rs 2,00,000, available 24x7
+- International remittance: Maximum USD 250,000 per year under LRS
+- Required documents for international remittance: PAN card, purpose declaration
+- Processing time: NEFT same day, RTGS within 30 minutes

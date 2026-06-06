@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from database import SessionLocal, ConversationLog
 import os
 import uuid
+from rag import rag_answer, vectorstore
 
 load_dotenv()
 
@@ -135,3 +136,15 @@ def get_all_conversations(db: Session = Depends(get_db)):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+class PolicyQuestion(BaseModel):
+    question: str
+
+@app.post("/policy/ask")
+def ask_policy(request: PolicyQuestion):
+    answer = rag_answer(request.question, vectorstore)
+    return {
+        "question": request.question,
+        "answer": answer,
+        "source": "banking_policy.txt"
+    }
